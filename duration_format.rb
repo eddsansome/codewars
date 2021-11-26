@@ -33,11 +33,10 @@ class TimeFormatter
     @data = data
   end
 
-  # this is still pretty meh
   def call
-    formatter = data.map { |k, v| "#{v} #{pluralize(k.to_s, v)}" }
-    formatter.insert(-2, 'and') if formatter.size > 1
-    formatter.join(', ').gsub(', and,', ' and')
+    data.map { |k, v| "#{v} #{pluralize(k.to_s, v)}" }
+        .then{|x| x.size > 1 ? x.insert(-2, 'and') : x }
+        .join(', ').gsub(', and,', ' and')
   end
 
   private
