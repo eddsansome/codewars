@@ -7,28 +7,24 @@ class TimeCalc
 
   def initialize(seconds)
     @seconds = seconds
-    # do we need all of them?
-    # we could even turn this into a struct? :thinkings
     @data = {
-      years: 0,
-      days: 0,
-      hours: 0,
-      minutes: 0,
-      seconds: 0
+      year: 0,
+      day: 0,
+      hour: 0,
+      minute: 0,
+      second: 0
     }
   end
 
-  #  we could use #then here and pass the value to the next in the chain
   def call
-    data[:years] = (seconds - (seconds % YEAR)) / YEAR
-    seconds1 = seconds % YEAR
-    data[:days] = (seconds1 - (seconds1 % DAY)) / DAY
-    seconds2 = seconds1 % DAY
-    data[:hours] = (seconds2 - (seconds2 % HOUR)) / HOUR
-    seconds3 = seconds2 % HOUR
-    data[:minutes] = (seconds3 - (seconds3 % MINUTE)) / MINUTE
-    data[:seconds] = seconds3 % MINUTE
-    data
+    # Hashes enumerate their values in the order that the corresponding keys were inserted.
+    rem = seconds
+    data.update(data) do |k, _v|
+      sec = rem
+      val = Object.const_get("TimeCalc::#{k.upcase}")
+      rem %= val
+      (sec - (sec % val)) / val
+    end
   end
 
   private
@@ -38,26 +34,16 @@ end
 
 class TimeFormatter
   def initialize(data)
-    # do we even need the extra keys doe??
     @data = data.reject { |_k, v| v.zero? }
   end
 
-  # what a mess
-  # we could probably use #each_with_object here to tidy this up
+  # this is still pretty meh
   def call
-    formatter = []
-    formatter << "#{data[:years]} #{pluralize('year', data[:years])}" if data[:years]
-    formatter << "#{data[:days]} #{pluralize('day', data[:days])}" if data[:days]
-    formatter << "#{data[:hours]} #{pluralize('hour', data[:hours])}" if data[:hours]
-    formatter << "#{data[:minutes]} #{pluralize('minute', data[:minutes])}" if data[:minutes]
-    formatter << "#{data[:seconds]} #{pluralize('second', data[:seconds])}" if data[:seconds]
-    # need that and
+    formatter = data.map { |k, v| "#{v} #{pluralize(k.to_s, v)}" }
     formatter.insert(-2, 'and') if formatter.size > 1
-    # giggle
     formatter.join(', ').gsub(', and,', ' and')
   end
 
-  # this could be extracted / monkey patch string?? :troll
   def pluralize(string, num)
     string += 's' if num > 1
     string
