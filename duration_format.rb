@@ -42,8 +42,7 @@ class TimeFormatter
   private
 
   def pluralize(string, num)
-    string += 's' if num > 1
-    string
+    num > 1 ? string << 's' : string
   end
 
   attr_reader :data
