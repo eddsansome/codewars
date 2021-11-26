@@ -41,9 +41,9 @@ class TimeFormatter
 
   private
 
-  def pluralize(string, num)
-    num > 1 ? string << 's' : string
-  end
+  # ruby 3.0.0 weeeeWOOOOOOOOO
+  def pluralize(string, num) =  num > 1 ? string << 's' : string
+
 
   attr_reader :data
 end
