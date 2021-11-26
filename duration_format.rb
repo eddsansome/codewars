@@ -7,34 +7,30 @@ class TimeCalc
 
   def initialize(seconds)
     @seconds = seconds
-    @data = {
-      year: 0,
-      day: 0,
-      hour: 0,
-      minute: 0,
-      second: 0
-    }
+    @data = { year: 0, day: 0, hour: 0, minute: 0, second: 0 }
+    @remainder = seconds
   end
 
   def call
-    # Hashes enumerate their values in the order that the corresponding keys were inserted.
-    rem = seconds
-    data.update(data) do |k, _v|
-      sec = rem
-      val = Object.const_get("TimeCalc::#{k.upcase}")
-      rem %= val
-      (sec - (sec % val)) / val
-    end
+    data.update(data) {|k,_v| calculate_time(k)}.reject { |_k, v| v.zero? }
   end
 
   private
 
+  def calculate_time(k)
+      sec = @remainder
+      val = Object.const_get("TimeCalc::#{k.upcase}")
+      @remainder %= val
+      (sec - (sec % val)) / val
+  end
+
   attr_reader :data, :seconds
+  attr_accessor :sec, :val
 end
 
 class TimeFormatter
   def initialize(data)
-    @data = data.reject { |_k, v| v.zero? }
+    @data = data
   end
 
   # this is still pretty meh
@@ -44,12 +40,12 @@ class TimeFormatter
     formatter.join(', ').gsub(', and,', ' and')
   end
 
+  private
+
   def pluralize(string, num)
     string += 's' if num > 1
     string
   end
-
-  private
 
   attr_reader :data
 end
@@ -57,8 +53,8 @@ end
 def format_duration(seconds)
   return 'now' if seconds.zero?
 
-  time_hash = TimeCalc.new(seconds).call
-  TimeFormatter.new(time_hash).call
+  time = TimeCalc.new(seconds).call
+  TimeFormatter.new(time).call
 end
 
 class Test
